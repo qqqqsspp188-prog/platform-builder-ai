@@ -1,19 +1,52 @@
 'use client';
 
-const projects = [
-  { name: 'موقع مقاولات', type: 'Website', status: 'نشر', color: 'bg-emerald-500/20 text-emerald-300' },
-  { name: 'متجر إلكتروني', type: 'Store', status: 'مسودة', color: 'bg-amber-500/20 text-amber-300' },
-  { name: 'منصة حجز عيادة', type: 'Booking', status: 'قيد الإنشاء', color: 'bg-blue-500/20 text-blue-300' },
-];
+import { useEffect, useState } from 'react';
+import { apiFetch } from '../lib/api';
 
-const stats = [
-  { label: 'المشاريع', value: '12' },
-  { label: 'الصفحات', value: '48' },
-  { label: 'AI Credits', value: '85' },
-  { label: 'الإيرادات', value: '6,250 ر.س' },
+type Project = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  type: string;
+  status: string;
+  createdAt: string;
+};
+
+const defaultProjects: Project[] = [
+  { id: '1', name: 'موقع مقاولات', slug: 'site-1', type: 'WEBSITE', status: 'PUBLISHED', createdAt: new Date().toISOString() },
+  { id: '2', name: 'متجر إلكتروني', slug: 'store-1', type: 'STORE', status: 'DRAFT', createdAt: new Date().toISOString() },
+  { id: '3', name: 'منصة حجز عيادة', slug: 'booking-1', type: 'BOOKING', status: 'GENERATING', createdAt: new Date().toISOString() },
 ];
 
 export default function DashboardPage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const data = await apiFetch<Project[]>('/projects');
+        setProjects(data && data.length ? data : defaultProjects);
+      } catch (err: any) {
+        setError(err.message || 'تعذر تحميل المشاريع');
+        setProjects(defaultProjects);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProjects();
+  }, []);
+
+  const stats = [
+    { label: 'المشاريع', value: String(projects.length) },
+    { label: 'الصفحات', value: '48' },
+    { label: 'AI Credits', value: '85' },
+    { label: 'الإيرادات', value: '6,250 ر.س' },
+  ];
+
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-7xl">
@@ -44,20 +77,26 @@ export default function DashboardPage() {
               <a href="/" className="text-sm text-blue-400 hover:text-blue-300">عرض الكل</a>
             </div>
 
-            <div className="space-y-4">
-              {projects.map((project) => (
-                <div key={project.name} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-4">
-                  <div>
-                    <p className="font-semibold">{project.name}</p>
-                    <p className="mt-1 text-sm text-slate-400">{project.type}</p>
-                  </div>
+            {loading ? (
+              <p className="text-slate-400">جاري تحميل المشاريع...</p>
+            ) : error ? (
+              <p className="text-red-400">{error}</p>
+            ) : (
+              <div className="space-y-4">
+                {projects.map((project) => (
+                  <div key={project.id} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-4">
+                    <div>
+                      <p className="font-semibold">{project.name}</p>
+                      <p className="mt-1 text-sm text-slate-400">{project.type}</p>
+                    </div>
 
-                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${project.color}`}>
-                    {project.status}
-                  </span>
-                </div>
-              ))}
-            </div>
+                    <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-medium text-slate-200">
+                      {project.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">

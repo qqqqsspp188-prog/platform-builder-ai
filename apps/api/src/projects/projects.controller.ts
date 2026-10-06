@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -38,5 +39,11 @@ export class ProjectsController {
   @Patch(':id')
   update(@Req() req, @Param('id') id: string, @Body() dto: Partial<CreateProjectDto>) {
     return this.projectsService.updateProject(req.user.id, id, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':id')
+  delete(@Req() req, @Param('id') id: string) {
+    return this.projectsService.deleteProject(req.user.id, id);
   }
 }

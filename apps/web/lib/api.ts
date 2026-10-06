@@ -1,42 +1,26 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { ProjectsService } from './projects.service';
-import { CreateProjectDto } from './dto/create-project.dto';
+export const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-@Controller('projects')
-export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-  @UseGuards(AuthGuard('jwt'))
-  @Post()
-  create(@Req() req, @Body() dto: CreateProjectDto) {
-    return this.projectsService.createProject(req.user.id, dto);
+  const res = await fetch(`${apiBaseUrl}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(errorText || 'Request failed');
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @Get()
-  list(@Req() req) {
-    return this.projectsService.listProjects(req.user.id);
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    return undefined as T;
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @Get(':id')
-  getOne(@Req() req, @Param('id') id: string) {
-    return this.projectsService.getProjectById(req.user.id, id);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Patch(':id')
-  update(@Req() req, @Param('id') id: string, @Body() dto: Partial<CreateProjectDto>) {
-    return this.projectsService.updateProject(req.user.id, id, dto);
-  }
+  return (await res.json()) as T;
 }

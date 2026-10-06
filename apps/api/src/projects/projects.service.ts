@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 
@@ -8,6 +8,10 @@ export class ProjectsService {
 
   async createProject(userId: string, dto: CreateProjectDto) {
     const normalizedName = dto.name.trim();
+    if (!normalizedName) {
+      throw new Error('Project name is required');
+    }
+
     const slug =
       dto.slug ||
       normalizedName
@@ -36,19 +40,22 @@ export class ProjectsService {
   }
 
   async getProjectById(userId: string, projectId: string) {
-    return this.prisma.project.findFirst({
+    const project = await this.prisma.project.findFirst({
       where: {
         id: projectId,
         ownerId: userId,
       },
     });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    return project;
   }
 
   async updateProject(userId: string, projectId: string, dto: Partial<CreateProjectDto>) {
     const project = await this.getProjectById(userId, projectId);
-    if (!project) {
-      throw new Error('Project not found');
-    }
 
     return this.prisma.project.update({
       where: { id: projectId },
@@ -58,7 +65,18 @@ export class ProjectsService {
         ...(dto.type ? { type: dto.type } : {}),
         ...(dto.slug ? { slug: dto.slug } : {}),
         ...(dto.isAiGenerated !== undefined ? { isAiGenerated: dto.isAiGenerated } : {}),
+        ...(dto.name ? { slug: dto.slug || project.slug } : {}),
       },
     });
+  }
+
+  async deleteProject(userId: string, projectId: string) {
+    await this.getProjectById(userId, projectId);
+
+    await this.prisma.project.delete({
+      where: { id: projectId },
+    });
+
+    return { success: true, id: projectId };
   }
 }
