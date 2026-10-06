@@ -2,34 +2,32 @@
 
 import { FormEvent, useState } from 'react';
 
-export default function LoginPage() {
+export default function RegisterPage() {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:3001/auth/login', {
+      const res = await fetch('http://localhost:3001/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ fullName, email, password, language: 'ar' }),
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
+      if (!res.ok) throw new Error(data.message || 'Failed to register');
 
       localStorage.setItem('token', data.accessToken);
-      setMessage('تم تسجيل الدخول بنجاح');
+      setMessage('تم إنشاء الحساب بنجاح');
       window.location.href = '/dashboard';
-    } catch (err: any) {
-      setMessage(err.message || 'حدث خطأ');
+    } catch (error: any) {
+      setMessage(error.message || 'حدث خطأ');
     } finally {
       setLoading(false);
     }
@@ -40,13 +38,25 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
         <div className="mb-8 text-center">
           <p className="text-sm text-blue-400">Platform Builder AI</p>
-          <h1 className="mt-2 text-3xl font-bold">تسجيل الدخول</h1>
+          <h1 className="mt-2 text-3xl font-bold">إنشاء حساب</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
+            <label className="mb-2 block text-sm text-slate-300">الاسم الكامل</label>
+            <input
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 outline-none focus:border-blue-500"
+              placeholder="اسم المستخدم"
+              required
+            />
+          </div>
+
+          <div>
             <label className="mb-2 block text-sm text-slate-300">البريد الإلكتروني</label>
             <input
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 outline-none focus:border-blue-500"
@@ -74,14 +84,14 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
+            {loading ? 'جاري إنشاء الحساب...' : 'إنشاء الحساب'}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-400">
-          لا تملك حساب؟{' '}
-          <a href="/register" className="text-blue-400 hover:text-blue-300">
-            إنشاء حساب
+          لديك حساب بالفعل؟{' '}
+          <a href="/login" className="text-blue-400 hover:text-blue-300">
+            تسجيل الدخول
           </a>
         </p>
       </div>

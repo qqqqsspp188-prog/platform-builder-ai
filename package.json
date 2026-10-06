@@ -1,0 +1,22 @@
+{
+  "name": "platform-builder-ai",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "db:generate": "prisma generate --schema=apps/api/prisma/schema.prisma",
+    "db:migrate": "prisma migrate dev --schema=apps/api/prisma/schema.prisma",
+    "db:studio": "prisma studio --schema=apps/api/prisma/schema.prisma",
+    "db:reset": "prisma migrate reset --force --schema=apps/api/prisma/schema.prisma"
+  },
+  "devDependencies": {
+    "turbo": "^2.1.2",
+    "typescript": "^5.6.2"
+  }
+}

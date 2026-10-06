@@ -1,102 +1,76 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+const projects = [
+  { name: 'موقع مقاولات', type: 'Website', status: 'نشر', color: 'bg-emerald-500/20 text-emerald-300' },
+  { name: 'متجر إلكتروني', type: 'Store', status: 'مسودة', color: 'bg-amber-500/20 text-amber-300' },
+  { name: 'منصة حجز عيادة', type: 'Booking', status: 'قيد الإنشاء', color: 'bg-blue-500/20 text-blue-300' },
+];
 
-export default function RegisterPage() {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+const stats = [
+  { label: 'المشاريع', value: '12' },
+  { label: 'الصفحات', value: '48' },
+  { label: 'AI Credits', value: '85' },
+  { label: 'الإيرادات', value: '6,250 ر.س' },
+];
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const res = await fetch('http://localhost:3001/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, password, language: 'ar' }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
-
-      localStorage.setItem('token', data.accessToken);
-      setMessage('تم إنشاء الحساب بنجاح');
-      window.location.href = '/dashboard';
-    } catch (err: any) {
-      setMessage(err.message || 'حدث خطأ أثناء إنشاء الحساب');
-    } finally {
-      setLoading(false);
-    }
-  }
-
+export default function DashboardPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 p-6 text-white">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
-        <div className="mb-8 text-center">
-          <p className="text-sm text-blue-400">Platform Builder AI</p>
-          <h1 className="mt-2 text-3xl font-bold">إنشاء حساب</h1>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
+    <main className="min-h-screen bg-slate-950 p-6 text-white">
+      <div className="mx-auto max-w-7xl">
+        <header className="mb-8 flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900 p-6">
           <div>
-            <label className="mb-2 block text-sm text-slate-300">الاسم الكامل</label>
-            <input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 outline-none focus:border-blue-500"
-              placeholder="اسم المستخدم"
-              required
-            />
+            <p className="text-sm text-slate-400">لوحة التحكم</p>
+            <h1 className="mt-1 text-3xl font-bold">مرحبًا بك مرة أخرى</h1>
           </div>
 
-          <div>
-            <label className="mb-2 block text-sm text-slate-300">البريد الإلكتروني</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 outline-none focus:border-blue-500"
-              placeholder="name@example.com"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm text-slate-300">كلمة المرور</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 outline-none focus:border-blue-500"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          {message && <p className="text-sm text-blue-300">{message}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? 'جاري إنشاء الحساب...' : 'إنشاء الحساب'}
+          <button className="rounded-xl bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-500">
+            + مشروع جديد
           </button>
-        </form>
+        </header>
 
-        <p className="mt-6 text-center text-sm text-slate-400">
-          لديك حساب بالفعل؟{' '}
-          <a href="/login" className="text-blue-400 hover:text-blue-300">
-            تسجيل الدخول
-          </a>
-        </p>
+        <section className="mb-8 grid gap-4 md:grid-cols-4">
+          {stats.map((item) => (
+            <div key={item.label} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+              <p className="text-sm text-slate-400">{item.label}</p>
+              <p className="mt-3 text-3xl font-bold">{item.value}</p>
+            </div>
+          ))}
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">آخر المشاريع</h2>
+              <a href="/" className="text-sm text-blue-400 hover:text-blue-300">عرض الكل</a>
+            </div>
+
+            <div className="space-y-4">
+              {projects.map((project) => (
+                <div key={project.name} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-4">
+                  <div>
+                    <p className="font-semibold">{project.name}</p>
+                    <p className="mt-1 text-sm text-slate-400">{project.type}</p>
+                  </div>
+
+                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${project.color}`}>
+                    {project.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <h2 className="mb-5 text-xl font-semibold">مبدئيًا</h2>
+            <ul className="space-y-4 text-sm text-slate-300">
+              <li>• إنشاء مشروع جديد باستخدام الذكاء الاصطناعي</li>
+              <li>• اختيار القالب المناسب</li>
+              <li>• تخصيص الألوان والخطوط</li>
+              <li>• تعديل الصفحات في المحرر المرئي</li>
+              <li>• معاينة ونشر الموقع</li>
+            </ul>
+          </div>
+        </section>
       </div>
     </main>
   );
